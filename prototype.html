@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Charder U310 – Body Composition Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--canvas:#dfe4e7;--ui:#ffffff;--ui-ink:#33434c;--ui-line:#c7d1d6;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--canvas:#11181d;--ui:#1b252c;--ui-ink:#dce6eb;--ui-line:#2e3d46;color-scheme:dark}}
+:root[data-theme="dark"]{--canvas:#11181d;--ui:#1b252c;--ui-ink:#dce6eb;--ui-line:#2e3d46;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--canvas);font-family:Montserrat,Arial,Helvetica,sans-serif;font-variant-numeric:tabular-nums;color:#2e3b44}
+.toolbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:3;display:flex;gap:8px;justify-content:flex-end;padding:10px 12px;background:var(--canvas)}
+.toolbar select,.toolbar button{font:600 13px Montserrat,Arial,sans-serif;color:var(--ui-ink);background:var(--ui);border:1px solid var(--ui-line);border-radius:6px;padding:7px 10px;cursor:pointer}
+.stage{display:flex;justify-content:center;padding:0 0 24px}
+#fitbox{overflow:hidden;flex:none}
+.fit{width:794px;transform-origin:0 0}
+html,body{overflow-x:hidden}
+/* ===== A4 sheet ===== */
+.sheet{width:794px;height:1123px;background:#fff;border:2px solid #5c656b;padding:22px 26px 20px;position:relative;box-shadow:0 4px 24px rgba(0,0,0,.18)}
+.g{background:linear-gradient(90deg,#1c4785 0%,#245f8d 40%,#2f8e94 75%,#45ad9b 100%);color:#fff}
+.top{display:flex;justify-content:space-between;align-items:flex-end;height:44px}
+.logo{font:500 33px/1 Montserrat,Arial,sans-serif;color:#8d2525;letter-spacing:.5px}
+.logo sup{font-size:9px;vertical-align:28px;margin-left:1px}
+.model{font:600 13px Montserrat,Arial;color:#37444c;padding-bottom:2px}
+.ident{display:grid;grid-template-columns:1.3fr .7fr .8fr .8fr .8fr 1.4fr;margin-top:6px;font-size:12.5px;text-align:center}
+.ident .h{font-weight:700;padding:5px 0;border-right:2px solid #fff}
+.ident .h:nth-child(6){border:0}
+.ident .v{background:#ececec;color:#3a454c;font-weight:500;padding:5px 0;font-size:11.5px}
+.cols{display:grid;grid-template-columns:470px 1fr;gap:9px;margin-top:9px}
+.col{display:flex;flex-direction:column;gap:6px}
+.t{font:800 13.5px Montserrat,Arial;padding:6px 10px;letter-spacing:.1px}
+.t.c{text-align:center}
+/* body composition table */
+.bct{display:grid;grid-template-columns:283px 1fr;gap:3px 9px;padding:5px 0 0}
+.bct .l,.bct .r{background:#e3e3e3;height:21.6px;display:flex;align-items:center;font-size:12.5px}
+.bct .l{justify-content:space-between;padding:0 8px 0 10px;font-weight:700;color:#38444b}
+.bct .l i{font:italic 400 9.5px Montserrat,Arial;color:#8a9399}
+.bct .r{justify-content:flex-end;padding-right:10px;font-weight:600;font-size:11.5px;color:#3a454c}
+/* analysis bars (InBody style) */
+.an{padding:2px 0 4px}
+.ar{display:grid;grid-template-columns:118px 1fr;border-bottom:1.6px solid #4c565c;height:39px;align-items:center}
+.ar:last-child{border-bottom:0}
+.ar .nm{font:500 17px Montserrat,Arial;color:#3d474e;line-height:1}
+.ar .nm sup{font-size:7px;font-weight:600;margin-left:6px;vertical-align:5px}
+.ar .nm small{display:block;font-size:6px;color:#9aa3a8;margin-top:2px}
+.scale{position:relative;height:40px;margin-right:30px}
+.bands{position:absolute;top:8px;left:0;right:0;height:7px;display:flex}
+.bands i{height:100%;display:block}
+.ticks{position:absolute;top:16px;left:0;right:0;font-size:6.3px;color:#6b757b}
+.ticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.ticks span:before{content:"";position:absolute;left:50%;top:-2px;width:.6px;height:9px;background:#9aa3a8}
+.ticks span{padding-left:2px}
+.hdr{position:absolute;top:-3px;font-size:6.5px;color:#58636a;transform:translateX(-50%)}
+.val{position:absolute;top:28px;left:0;height:5.5px;background:#262c30}
+.val b{position:absolute;left:100%;top:-3px;margin-left:5px;font:700 8.5px Montserrat,Arial;color:#1f2529}
+/* segmental */
+.segwrap{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:6px}
+.segt{font:800 12.5px Montserrat,Arial,sans-serif;text-align:center;padding:4px 0}
+.segfig{width:100%;height:166px;display:block}
+.strip{display:grid;grid-template-columns:repeat(5,1fr);gap:2px}
+.strip span{font-size:7.4px;text-align:center;color:#4e5a61;padding:3px 0}
+.strip i{height:24px;background:linear-gradient(180deg,#f2d9b0 0%,#ecd8b6 30%,#a9d6cc 40%,#94c9c6 62%,#5f86c6 72%,#4a74bd 100%);position:relative;display:block}
+.strip i b{position:absolute;left:30%;right:30%;height:1.6px;background:#3a444a}
+/* change table */
+.chg{display:grid;grid-template-columns:92px 72px repeat(6,1fr);font-size:12px;border-left:1px solid #e3e3e3}
+.chg>div{border-right:1px dashed #b9c0c4;border-bottom:1.6px solid #4c565c;height:27px;display:flex;align-items:center;padding:0 6px}
+.chg .k{font:500 15px Montserrat,Arial,sans-serif;color:#3d474e;flex-direction:column;align-items:flex-start;justify-content:center;line-height:1}
+.chg .k small{font-size:5.5px;color:#9aa3a8;margin-top:2px}
+.chg .k sup{font-size:6px}
+.chg .d{background:#dcdcdc;border-bottom:0;height:30px;font-size:8px;color:#4a555b;font-weight:600}
+/* right column */
+.ish{display:grid;grid-template-columns:1fr 1fr;height:282px;padding-top:8px}
+.ish>div{display:flex;flex-direction:column;align-items:center}
+.ish>div:first-child{border-right:1.6px solid #9ca5aa}
+.ish .ttl{font:500 12px Montserrat,Arial,sans-serif;color:#3a454c;padding:4px 18px 8px;border-bottom:1.6px solid #6f7a80;margin-bottom:8px}
+.mx{display:grid;grid-template-columns:42px repeat(3,18px);gap:4px 1px;align-items:center;margin-top:10px;font-size:10.5px;color:#3a454c}
+.mx .sy{font-size:9px;text-align:center;color:#9aa3a8}
+.mx .c{height:18px;display:grid;place-items:center}
+.mx .c1{background:#b8c6e6}.mx .c2{background:#a9d5c8}.mx .c3{background:#f3d7b3}
+.mx .c b{width:7px;height:7px;border-radius:50%;background:#1d2327}
+.lg{margin-top:24px;display:grid;grid-template-columns:14px auto;gap:9px 8px;font-size:7px;color:#8a949a;align-items:center}
+.vf{display:grid;grid-template-columns:1fr 54px;align-items:end;padding:8px 2px 6px}
+.vf .bar{position:relative;height:30px}
+.vf .bar i{position:absolute;bottom:0;height:9px}
+.vf .bar span{position:absolute;top:2px;font:700 9px Montserrat,Arial,sans-serif;transform:translateX(-50%)}
+.vf .n{font:600 22px Montserrat,Arial,sans-serif;text-align:right;color:#323d44}.vf .n small{font-size:9px}
+.trio{display:grid;grid-template-columns:repeat(3,1fr)}
+.trio .h{font:800 9.5px Montserrat,Arial,sans-serif;text-align:center;padding:8px 0;border-right:1px solid rgba(255,255,255,.5)}
+.trio .v{text-align:center;font-size:12px;color:#3a454c;padding:12px 0;border-right:1px solid #9ca5aa}
+.trio .v:last-child,.trio .h:nth-child(3){border-right:0}
+.cmp{display:grid;grid-template-columns:72px repeat(3,1fr);font-size:12px}
+.cmp>div{height:27px;display:flex;align-items:center;justify-content:center;border:1px solid #6d777c;border-width:0 1px 1px 0}
+.cmp .hh{font:800 7.5px Montserrat,Arial,sans-serif;border-color:rgba(255,255,255,.45);height:24px}
+.cmp .rh{font:800 6.3px Montserrat,Arial,sans-serif;color:#fff;border-color:rgba(255,255,255,.45);text-align:center;line-height:1.1;padding:0 3px}
+.cmp .cell{color:#3a454c;background:#fff}
+@media print{.toolbar{display:none}body{background:#fff}.stage{padding:0}.fit{transform:none!important}.sheet{border:0;box-shadow:none}@page{size:A4;margin:0}}
+</style>
+</head>
+<body>
+<div class="toolbar"><select id="who" aria-label="Choose report"></select><button id="theme" aria-label="Switch theme">Theme</button><button onclick="window.print()">Print</button></div>
+<div class="stage"><div id="fitbox"><div class="fit" id="fit"><div class="sheet" id="sheet"></div></div></div></div>
+<script>
+/* ---------------- data ---------------- */
+const PEOPLE=[
+ {name:'CHARDER EGYPT',id:'A00BF',gender:'Male',age:29,height:179,date:'1/1/2024 6:34:29 PM',short:'2024.01.01\n06:34 PM',
+  w:72.6,bmi:22.6,visc:7,fat:21.2,fm:15.4,smm:31.7,lean:53.9,water:57.7,bage:36,bmr:1605,bone:3.3,
+  segM:{tr:25.3,ra:3.1,la:3.1,rl:8.8,ll:8.8},segF:{tr:8.9,ra:.6,la:.6,rl:2,ll:2},hist:[]},
+ {name:'majid',id:'09133317383',gender:'Male',age:36,height:182,date:'10/31/2026 11:14:18 AM',short:'2026.10.31\n11:14 AM',
+  w:77.95,bmi:23.5,visc:7,fat:19.5,fm:15.2,smm:34.9,lean:59.3,water:58.9,bage:37,bmr:1725,bone:3.4,
+  segM:{tr:28.3,ra:3.7,la:3.5,rl:9.8,ll:10.0},segF:{tr:8.8,ra:.6,la:.6,rl:2,ll:2},
+  hist:[{w:81.4,smm:33.6,fat:22.6,d:'2026.05.02'},{w:80.1,smm:33.9,fat:21.8,d:'2026.06.14'},{w:79.3,smm:34.2,fat:21.0,d:'2026.07.26'},{w:78.6,smm:34.6,fat:20.2,d:'2026.09.12'}]}];
+let P=PEOPLE[0];
+
+/* ---------------- figures: closed Catmull-Rom spline through a mirrored half-outline ---------------- */
+function spline(pts){const n=pts.length;let d=`M${pts[0][0]} ${pts[0][1]}`;
+ for(let i=0;i<n;i++){const p0=pts[(i-1+n)%n],p1=pts[i],p2=pts[(i+1)%n],p3=pts[(i+2)%n];
+  d+=`C${(p1[0]+(p2[0]-p0[0])/6).toFixed(1)} ${(p1[1]+(p2[1]-p0[1])/6).toFixed(1)} ${(p2[0]-(p3[0]-p1[0])/6).toFixed(1)} ${(p2[1]-(p3[1]-p1[1])/6).toFixed(1)} ${p2[0]} ${p2[1]}`}return d+'Z'}
+const mirror=h=>h.concat(h.slice(1,-1).reverse().map(([x,y])=>[200-x,y]));
+// standing male, arms down beside the thighs (Standard figure + fat figure)
+const STAND=mirror([[100,6],[110,8],[116,16],[118,28],[116,42],[112,52],[110,60],[111,66],[122,71],[136,75],[147,81],[152,92],[154,106],[155,122],[156,140],[157,158],[158,176],[160,194],[161,210],[163,222],[165,232],[163,241],[159,246],[154,243],[152,233],[151,220],[149,204],[146,186],[144,168],[142,150],[140,132],[137,116],[135,132],[133,150],[131,168],[133,186],[136,204],[139,222],[140,244],[138,266],[134,288],[131,306],[133,326],[131,348],[127,368],[123,386],[124,398],[121,405],[110,406],[106,401],[106,388],[105,366],[104,344],[104,322],[103,300],[103,276],[102,254],[100,240]]);
+// double-biceps pose (segmental muscle figure)
+const FLEX=mirror([[100,6],[110,8],[116,16],[118,28],[116,42],[112,52],[110,60],[111,66],[124,70],[138,72],[150,74],[162,72],[170,66],[170,56],[167,46],[166,36],[171,27],[180,25],[189,31],[192,42],[192,56],[190,72],[187,88],[180,98],[168,102],[154,106],[140,114],[136,132],[133,150],[131,168],[133,186],[136,204],[139,222],[140,244],[138,266],[134,288],[131,306],[133,326],[131,348],[127,368],[123,386],[124,398],[121,405],[110,406],[106,401],[106,388],[105,366],[104,344],[104,322],[103,300],[103,276],[102,254],[100,240]]);
+const SP=spline(STAND),FP=spline(FLEX);let fid=0;
+
+// Standard figure: navy→teal gradient silhouette; lower part is animated water at the body-water level
+function standard(){const id='s'+(++fid),top=406-P.water/100*400;
+ return `<svg viewBox="0 0 200 410" style="height:236px;display:block;overflow:visible" role="img" aria-label="Standard body figure">
+ <defs><clipPath id="c${id}"><path d="${SP}"/></clipPath>
+ <linearGradient id="a${id}" x1="0" y1="0" x2="0" y2="410" gradientUnits="userSpaceOnUse"><stop stop-color="#163f73"/><stop offset=".45" stop-color="#1f5d83"/><stop offset="1" stop-color="#3a9c9a"/></linearGradient>
+ <linearGradient id="b${id}" x1="0" y1="${top}" x2="0" y2="410" gradientUnits="userSpaceOnUse"><stop stop-color="#5cc0aa" stop-opacity=".22"/><stop offset="1" stop-color="#5cc0aa" stop-opacity=".45"/></linearGradient></defs>
+ <path d="${SP}" fill="url(#a${id})"/>
+ <g clip-path="url(#c${id})"><path class="wv" data-top="${top}" data-amp="4" data-ph="0" fill="url(#b${id})"/><path class="wv" data-top="${top+2}" data-amp="3" data-ph="2" fill="#7fd0bb" fill-opacity=".15"/></g></svg>`}
+
+// Segmental figure with dots, curved leader lines and labels
+function segfig(kind){const m=kind==='m',S=m?P.segM:P.segF,id='g'+(++fid);
+ const dot=m?{tr:[100,104],ra:[22,84],la:[178,84],rl:[90,300],ll:[110,300]}:{tr:[100,96],ra:[44,170],la:[156,170],rl:[90,300],ll:[110,300]};
+ const lab={tr:[230,40,'Trunk'],ra:[-110,140,'Right Arm'],la:[230,140,'Left Arm'],rl:[-110,288,'Right Leg'],ll:[230,288,'Left Leg']};
+ let o='';for(const k in dot){const [x,y]=dot[k],[lx,ly,n]=lab[k],R=lx>100,ex=R?lx-8:lx+86;
+  o+=`<path d="M${x} ${y}C${(x+ex)/2} ${y} ${(x+ex)/2} ${ly+8} ${ex} ${ly+8}H${R?lx+80:lx+6}" fill="none" stroke="#3d464c" stroke-width="1.3"/><circle cx="${x}" cy="${y}" r="4.2" fill="#2d353a"/>
+  <text x="${lx+(R?0:6)}" y="${ly-18}" font-size="11" fill="#4a555b">${n}</text><text x="${lx+(R?0:6)}" y="${ly+2}" font-size="17" font-weight="600" fill="#2f393f">${S[k]}kg</text>`}
+ const lg=[['#f2d9b0','High'],['#a9d6cc','Normal'],['#5f86c6','Low']].map((c,i)=>`<rect x="-112" y="${4+i*20}" width="16" height="18" fill="${c[0]}"/><text x="-90" y="${17+i*20}" font-size="10" fill="#4a555b">${c[1]}</text>`).join('');
+ return `<svg class="segfig" viewBox="-115 0 430 410" role="img" aria-label="Segmental ${m?'muscle':'fat'} figure"><defs><radialGradient id="${id}" cx=".5" cy=".4" r=".7"><stop stop-color="${m?'#f7d9a6':'#dae4f2'}"/><stop offset="1" stop-color="${m?'#f1c98d':'#c9d7ec'}"/></radialGradient><filter id="f${id}"><feGaussianBlur stdDeviation="3"/></filter></defs>
+ <path d="${m?FP:SP}" fill="${m?'#f5d6a2':'#d6e1f1'}" opacity=".55" filter="url(#f${id})"/><path d="${m?FP:SP}" fill="url(#${id})"/>${lg}${o}</svg>`}
+
+/* ---------------- InBody-style analysis bar ---------------- */
+// ticks: 11 equally spaced labels; bands: [tickIndexEnd,color]; value placed by piecewise-linear interpolation
+function pos(ticks,v){if(v<=ticks[0])return 0;for(let i=0;i<ticks.length-1;i++)if(v<=ticks[i+1])return (i+(v-ticks[i])/(ticks[i+1]-ticks[i]))/(ticks.length-1)*100;return 100}
+const BL='#7d98cf',GR='#8fc6a2',BE='#f4d9a7',RD='#c3202a';
+function arow(nm,unit,sub,ticks,bands,val,label,hdr){let x=0;const bs=bands.map(([end,c])=>{const w=end/(ticks.length-1)*100-x;x+=w;return `<i style="width:${w}%;background:${c}"></i>`}).join('');
+ return `<div class="ar"><div class="nm">${nm}<sup>${unit}</sup><small>${sub}</small></div><div class="scale">${hdr?hdr.map(([p,t])=>`<span class="hdr" style="left:${p}%">${t}</span>`).join(''):''}
+ <div class="bands">${bs}</div><div class="ticks">${ticks.map((t,i)=>`<span style="left:${i/(ticks.length-1)*100}%">${t}</span>`).join('')}</div>
+ <div class="val" style="width:${pos(ticks,val)}%"><b>${label}</b></div></div></div>`}
+const H3=[[13,'Under'],[33,'Normal'],[70,'Over']];
+
+/* ---------------- render ---------------- */
+function render(){fid=0;const p=P,stdW=22*(p.height/100)**2,stdS=stdW*.45,stdF=stdW*.18;
+ const W=[55,70,85,100,115,130,145,160,175,190,205],S=[70,80,90,100,110,120,130,140,150,160,170],F=[40,60,80,100,160,220,280,340,400,460,520];
+ const PB=[0,5,10,15,20,25,30,35,40,45,50],BM=[10,15,18.5,21,25,30,35,40,45,50,55];
+ const all=[...p.hist,{w:p.w,smm:p.smm,fat:p.fat,d:p.short.split('\n')[0]}];const first=all[0],prev=all[all.length-2]||all[all.length-1];
+ const r1=v=>Math.round(v*10)/10;
+ document.getElementById('sheet').innerHTML=`
+ <div class="top"><div class="logo">charder<sup>®</sup></div><div class="model">U310</div></div>
+ <div class="ident"><div class="h g">Name</div><div class="h g" style="background:linear-gradient(90deg,#20508a,#245a8c)">ID</div><div class="h g" style="background:linear-gradient(90deg,#245a8c,#27698e)">Gender</div><div class="h g" style="background:linear-gradient(90deg,#27698e,#2b7a91)">Age</div><div class="h g" style="background:linear-gradient(90deg,#2b7a91,#348e94)">Height</div><div class="h g" style="background:linear-gradient(90deg,#348e94,#45ad9b)">Date</div>
+ ${[p.name,p.id,p.gender,p.age,p.height,p.date].map(v=>`<div class="v">${v}</div>`).join('')}</div>
+ <div class="cols"><div class="col">
+  <div><div class="t g">Body Composition Analysis</div><div class="bct">${[['Weight','Body Weight',p.w+'kg'],['BMI','Body Mass Index',p.bmi],['Visceral Fat','Visceral Fat Level',p.visc],['Body Fat %','Percentage of body fat',p.fat+'%'],['Body Fat Mass','Weight of body fat',p.fm+'kg'],['SMM','Skeletal Muscle Mass',p.smm+'kg'],['Muscle Mass','Lean Body Mass',p.lean+'kg'],['Body Water','Body Water Percentage',p.water+'%'],['Body Age','Estimated Body Age',p.bage],['BMR','Basal Metabolic Rate',p.bmr+'kcal'],['Bone Mass','Bone Mineral Mass',p.bone+'kg']].map(r=>`<div class="l">${r[0]}<i>(${r[1]})</i></div><div class="r">${r[2]}</div>`).join('')}</div></div>
+  <div><div class="t g">Muscle / Fat Analysis</div><div class="an">
+   ${arow('Weight','kg','Total Body Weight',W,[[2,BL],[4,GR],[7,BE],[10,RD]],p.w/stdW*100,r1(p.w)+'',H3)}
+   ${arow('SMM','kg','Skeletal Muscle Mass',S,[[2,BL],[4,GR],[7,BE],[10,RD]],p.smm/stdS*100,r1(p.smm)+'')}
+   ${arow('BFM','kg','Body Fat Mass',F,[[2,BL],[4,GR],[10,RD]],p.fm/stdF*100,r1(p.fm)+'')}</div></div>
+  <div><div class="t g">Obesity Analysis</div><div class="an">
+   ${arow('PBF','%','Percent Body Fat',PB,[[2,BL],[4,GR],[10,RD]],p.fat,r1(p.fat)+'',H3)}
+   ${arow('BMI','kg/m²','Body Mass Index',BM,[[2,BL],[4,GR],[5,BE],[10,'repeating-linear-gradient(90deg,#c3202a 0 18px,#8f1218 18px 22px)']],p.bmi,r1(p.bmi)+'')}</div></div>
+  <div><div class="t g">Segmental Analysis</div><div class="segwrap">
+   ${['m','f'].map(k=>`<div><div class="segt g">Segmental ${k==='m'?'Muscle':'Fat'} Analysis</div>${segfig(k)}<div class="strip">${['Right Leg','Right Arm','Trunk','Left Arm','Left Leg'].map(n=>`<span>${n}</span>`).join('')}${[0,1,2,3,4].map(()=>`<i><b style="top:${k==='m'?13:7}px"></b></i>`).join('')}</div></div>`).join('')}</div></div>
+  <div><div class="t g">Body Composition Change</div><div class="chg">
+   ${[['Weight','kg','Total Body Weight','w','kg'],['SMM','kg','Skeletal Muscle Mass','smm','kg'],['PBF','%','Percent Body Fat','fat','%']].map(([n,u,s,key,su])=>`<div class="k"><span>${n}<sup> ${u}</sup></span><small>${s}</small></div>${all.slice(-7).map(h=>`<div>${h[key]}${su}</div>`).join('')}${'<div></div>'.repeat(7-Math.min(7,all.length))}`).join('')}
+   <div class="d">Test Date</div>${all.slice(-7).map(h=>`<div class="d">${h.d}</div>`).join('')}${'<div class="d"></div>'.repeat(7-Math.min(7,all.length))}</div></div>
+ </div>
+ <div class="col">
+  <div><div class="t g c">I-Shape</div><div class="ish"><div><div class="ttl">Standard</div>${standard()}</div>
+   <div><div class="ttl">I-Shape</div><div class="mx"><span></span><span class="sy">—</span><span class="sy">○</span><span class="sy">+</span>${['Weight','SMM','BFM'].map(n=>`<span>${n}</span><div class="c c1"></div><div class="c c2"><b></b></div><div class="c c3"></div>`).join('')}</div>
+   <div class="lg"><span style="color:#9aa3a8;text-align:center">—</span><span>Result is Low</span><span style="color:#9aa3a8;text-align:center">○</span><span>Result is Normal</span><span style="color:#9aa3a8;text-align:center">+</span><span>Result is High</span></div></div></div></div>
+  <div><div class="t g c">Body Type Trend</div>${typeChart()}</div>
+  <div><div class="t g c">Visceral Fat</div><div class="vf"><div class="bar"><i style="left:0;width:44%;background:#a8d3d4"></i><i style="left:44%;width:56%;background:#f4d4a9"></i><span style="left:2%">1</span><span style="left:44%">10</span><span style="left:96%">50</span></div><div class="n">${p.visc} <small>lv</small></div></div></div>
+  <div class="trio"><div class="h g" style="background:linear-gradient(90deg,#1c4785,#245f8d)">Body Age</div><div class="h g" style="background:linear-gradient(90deg,#245f8d,#2f8e94)">Bone Mass</div><div class="h g" style="background:linear-gradient(90deg,#2f8e94,#45ad9b)">BMR</div><div class="v">${p.bage}Y</div><div class="v">${p.bone}kg</div><div class="v">${p.bmr}kcal</div></div>
+  <div><div class="t g c" style="font-size:10.5px">Compared To First And Last Measurement</div><div class="cmp g" style="background:linear-gradient(90deg,#1c4785,#2f8e94 60%,#45ad9b)">
+   <div class="hh">%</div><div class="hh">Weight</div><div class="hh">Fat</div><div class="hh">SMM</div>
+   ${[['Result',p.w+'kg',p.fat+'%',p.smm+'kg'],['Compare To First',r1(p.w-first.w),r1(p.fat-first.fat),r1(p.smm-first.smm)],['Compare To Last',r1(p.w-prev.w),r1(p.fat-prev.fat),r1(p.smm-prev.smm)],['Max Results',Math.max(...all.map(h=>h.w)),Math.max(...all.map(h=>h.fat)),Math.max(...all.map(h=>h.smm))],['Min Results',Math.min(...all.map(h=>h.w)),Math.min(...all.map(h=>h.fat)),Math.min(...all.map(h=>h.smm))]].map(r=>`<div class="rh">${r[0]}</div>${r.slice(1).map(v=>`<div class="cell">${v}</div>`).join('')}`).join('')}</div></div>
+ </div></div>`;fit()}
+
+/* Body Type Trend: one diagonal navy→teal gradient across the 3×3 grid, thin light grid lines, black arrow axes */
+function typeChart(){const p=P,X0=26,Y0=24,S=228,c=S/3;
+ const band=(v,a,b,lo,hi)=>v<a?(v-lo)/(a-lo):v<b?1+(v-a)/(b-a):2+Math.min(1,(v-b)/(hi-b));
+ const px=X0+Math.max(.15,Math.min(2.85,band(p.fat,10,25,0,40)))*c,py=Y0+S-Math.max(.15,Math.min(2.85,band(p.bmi,18.5,25,12,35)))*c;
+ const L=[['Athletic','Over Weight|Muscular','Obese'],['Low Fat|Muscular','Standard','Over Fat'],['Low Fat|Low Weight','Low Weight','Skinny Fat']];
+ let s=`<svg viewBox="0 0 270 290" style="width:100%;display:block;margin-top:4px" role="img" aria-label="Body type trend"><defs><linearGradient id="bt" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#1c4b86"/><stop offset=".5" stop-color="#2b7591"/><stop offset="1" stop-color="#4bae9e"/></linearGradient>
+ <marker id="ar" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M1 1L6 5L1 9" fill="none" stroke="#1d2327" stroke-width="1.4"/></marker></defs>
+ <rect x="${X0}" y="${Y0}" width="${S}" height="${S}" fill="url(#bt)"/><rect x="${X0+2}" y="${Y0+2}" width="${S-4}" height="${S-4}" fill="none" stroke="#bfe3dc" stroke-opacity=".7" stroke-width="1.2"/>`;
+ [1,2].forEach(i=>s+=`<line x1="${X0+i*c}" x2="${X0+i*c}" y1="${Y0}" y2="${Y0+S}" stroke="#d6efe9" stroke-opacity=".8" stroke-width="1.4"/><line x1="${X0}" x2="${X0+S}" y1="${Y0+i*c}" y2="${Y0+i*c}" stroke="#d6efe9" stroke-opacity=".8" stroke-width="1.4"/>`);
+ L.forEach((r,ri)=>r.forEach((t,ci)=>{const ls=t.split('|'),cx=X0+ci*c+c/2,cy=Y0+ri*c+c/2-(ls.length-1)*5.5+3;
+  s+=`<text x="${cx}" y="${cy}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#fff">${ls.map((z,k)=>`<tspan x="${cx}" dy="${k?11:0}">${z}</tspan>`).join('')}</text>`}));
+ s+=`<circle cx="${px}" cy="${py-11}" r="4.5" fill="#fff" fill-opacity=".85" stroke="#fff" stroke-width="1.2"/><circle cx="${px}" cy="${py-11}" r="1.8" fill="#2b7591"/>
+ <path d="M${X0-6} ${Y0+S+6}V${Y0-14}" stroke="#1d2327" stroke-width="1.4" marker-end="url(#ar)"/><path d="M${X0-6} ${Y0+S+6}H${X0+S+16}" stroke="#1d2327" stroke-width="1.4" marker-end="url(#ar)"/>
+ <text transform="translate(${X0-12} ${Y0+S/2}) rotate(-90)" text-anchor="middle" font-size="10" fill="#3a454c">BMI</text>
+ <text x="${X0+S/2}" y="${Y0+S+24}" text-anchor="middle" font-size="12" fill="#3a454c">Body Fat (%)</text></svg>`;return s}
+
+/* water wave: y = top + A·sin(0.05x + 1.5t + φ) + 0.4A·sin(0.13x − 2.2t + 1.6φ) */
+const rm=matchMedia('(prefers-reduced-motion: reduce)');
+function tick(ms){const t=rm.matches?0:ms/1000;document.querySelectorAll('path.wv').forEach(e=>{const top=+e.dataset.top,A=rm.matches?0:+e.dataset.amp,ph=+e.dataset.ph;let d=`M0 ${top}`;
+ for(let x=0;x<=200;x+=5)d+=`L${x} ${(top+A*Math.sin(.05*x+1.5*t+ph)+.4*A*Math.sin(.13*x-2.2*t+1.6*ph)).toFixed(2)}`;e.setAttribute('d',d+'L200 420L0 420Z')});requestAnimationFrame(tick)}
+requestAnimationFrame(tick);
+function fit(){const vw=document.documentElement.clientWidth,k=Math.min(1,(vw-16)/794),f=document.getElementById('fit'),b=document.getElementById('fitbox');f.style.transform=`scale(${k})`;b.style.width=794*k+'px';b.style.height=1123*k+'px'}
+addEventListener('resize',fit);addEventListener('orientationchange',()=>setTimeout(fit,200));if(window.visualViewport)visualViewport.addEventListener('resize',()=>{if(visualViewport.scale===1)fit()});document.fonts&&document.fonts.ready.then(fit);
+const who=document.getElementById('who');who.innerHTML=PEOPLE.map((p,i)=>`<option value="${i}">${p.name} (${p.date.split(' ')[0]})</option>`).join('');
+who.onchange=()=>{P=PEOPLE[+who.value];render()};
+document.getElementById('theme').onclick=()=>{const r=document.documentElement,d=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.dataset.theme=d?'light':'dark';try{localStorage.setItem('t',r.dataset.theme)}catch(_){}};
+try{const t=localStorage.getItem('t');if(t)document.documentElement.dataset.theme=t}catch(_){}
+render();
+</script>
+</body>
+</html>
