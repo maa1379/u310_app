@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -270,57 +271,61 @@ class _ReportHomeState extends State<ReportHome> {
   Widget build(BuildContext context) => Directionality(
     textDirection: TextDirection.rtl,
     child: Scaffold(
-      body: Stack(
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final desktop = constraints.maxWidth >= 1080;
-              return Row(
-                children: [
-                  if (desktop) SizedBox(width: 284, child: _sidebar()),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        _toolbar(desktop),
-                        Expanded(child: _viewer()),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-          if (_busy)
-            Positioned.fill(
-              child: AbsorbPointer(
-                child: ColoredBox(
-                  color: const Color(0x99102d47),
-                  child: Center(
-                    child: Container(
-                      width: 230,
-                      padding: const EdgeInsets.all(26),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final desktop = constraints.maxWidth >= 1080;
+                return Row(
+                  children: [
+                    if (desktop) SizedBox(width: 284, child: _sidebar()),
+                    Expanded(
                       child: Column(
-                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          const CircularProgressIndicator(),
-                          const SizedBox(height: 20),
-                          Text(
-                            _busyMessage,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontWeight: FontWeight.w700),
-                          ),
+                          _toolbar(desktop),
+                          Expanded(child: _viewer()),
                         ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+            if (_busy)
+              Positioned.fill(
+                child: AbsorbPointer(
+                  child: ColoredBox(
+                    color: const Color(0x99102d47),
+                    child: Center(
+                      child: Container(
+                        width: 230,
+                        padding: const EdgeInsets.all(26),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const CircularProgressIndicator(),
+                            const SizedBox(height: 20),
+                            Text(
+                              _busyMessage,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     ),
   );
@@ -551,29 +556,39 @@ class _ReportHomeState extends State<ReportHome> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final scale = ((constraints.maxWidth - 24) / 794).clamp(0.1, 1.0);
-        return SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(
-            12,
-            constraints.maxWidth >= 860 ? 24 : 12,
-            12,
-            32,
-          ),
-          child: Center(
-            child: SizedBox(
-              width: 794 * scale,
-              height: 1123 * scale,
-              child: OverflowBox(
-                alignment: Alignment.topLeft,
-                minWidth: 794,
-                maxWidth: 794,
-                minHeight: 1123,
-                maxHeight: 1123,
-                child: Transform.scale(
-                  scale: scale,
-                  alignment: Alignment.topLeft,
-                  child: RepaintBoundary(
-                    key: _sheetKey,
-                    child: ReportSheet(measurement: _selected!),
+        final topPadding = constraints.maxWidth >= 860 ? 24.0 : 12.0;
+        return InteractiveViewer(
+          key: ObjectKey(_selected),
+          constrained: false,
+          minScale: 1,
+          maxScale: 5,
+          child: SizedBox(
+            width: constraints.maxWidth,
+            height: math.max(
+              constraints.maxHeight,
+              1123 * scale + topPadding + 32,
+            ),
+            child: Padding(
+              padding: EdgeInsets.only(top: topPadding),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: SizedBox(
+                  width: 794 * scale,
+                  height: 1123 * scale,
+                  child: OverflowBox(
+                    alignment: Alignment.topLeft,
+                    minWidth: 794,
+                    maxWidth: 794,
+                    minHeight: 1123,
+                    maxHeight: 1123,
+                    child: Transform.scale(
+                      scale: scale,
+                      alignment: Alignment.topLeft,
+                      child: RepaintBoundary(
+                        key: _sheetKey,
+                        child: ReportSheet(measurement: _selected!),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -720,4 +735,3 @@ class _ReportHomeState extends State<ReportHome> {
     ),
   );
 }
-

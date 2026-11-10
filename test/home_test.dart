@@ -48,4 +48,42 @@ void main() {
     expect(find.text('Body Composition Analysis'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('pinch zoom enlarges the report in a narrow window', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final sample = File('assets/sample.txt').readAsStringSync();
+    final imported = ImportedReport.fromText('sample_AllData.txt', sample);
+    SharedPreferences.setMockInitialValues({
+      'u310_imports_v1': jsonEncode([imported.toStorage()]),
+    });
+
+    await tester.pumpWidget(const U310App());
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('تاریخچه'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(ListTile).first);
+    await tester.pumpAndSettle();
+
+    final first = find.text('Body Composition Analysis');
+    final second = find.text('Muscle / Fat Analysis');
+    final initialDistance =
+        tester.getTopLeft(second).dy - tester.getTopLeft(first).dy;
+    final left = await tester.startGesture(const Offset(140, 320), pointer: 1);
+    final right = await tester.startGesture(const Offset(220, 320), pointer: 2);
+    await left.moveTo(const Offset(80, 320));
+    await right.moveTo(const Offset(280, 320));
+    await tester.pump();
+
+    final zoomedDistance =
+        tester.getTopLeft(second).dy - tester.getTopLeft(first).dy;
+    expect(zoomedDistance, greaterThan(initialDistance * 1.5));
+    expect(tester.takeException(), isNull);
+    await left.up();
+    await right.up();
+  });
 }
