@@ -22,8 +22,12 @@ WizardStyle=modern
 [Files]
 Source: "..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
+[Tasks]
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+
 [Icons]
 Name: "{autoprograms}\U310"; Filename: "{app}\u310_app.exe"
+Name: "{autodesktop}\U310"; Filename: "{app}\u310_app.exe"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\u310_app.exe"; Description: "Launch U310"; Flags: nowait postinstall skipifsilent
