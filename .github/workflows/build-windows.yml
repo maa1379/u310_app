@@ -22,6 +22,28 @@ jobs:
       - name: Build Windows app
         run: flutter build windows --release
 
+      - name: Bundle Visual C++ runtime
+        shell: pwsh
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          $visualStudio = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $visualStudio) { throw 'Visual Studio C++ tools were not found' }
+
+          $redistRoot = Join-Path $visualStudio 'VC\Redist\MSVC'
+          $crt = Get-ChildItem $redistRoot -Recurse -File -Filter msvcp140.dll |
+            Where-Object { $_.DirectoryName -match '\\x64\\Microsoft\.VC\d+\.CRT$' } |
+            Sort-Object FullName -Descending |
+            Select-Object -First 1
+          if (-not $crt) { throw 'The x64 Visual C++ runtime was not found' }
+
+          $release = 'build\windows\x64\runner\Release'
+          if (-not (Test-Path $release -PathType Container)) { throw 'Windows release bundle was not created' }
+          foreach ($dll in @('msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll')) {
+            $source = Join-Path $crt.DirectoryName $dll
+            if (-not (Test-Path $source)) { throw "Missing Visual C++ runtime file: $source" }
+            Copy-Item $source $release -Force
+          }
+
       - name: Build installer
         shell: pwsh
         run: |
@@ -32,6 +54,24 @@ jobs:
           if (-not (Test-Path $compiler)) { throw 'Inno Setup compiler is missing from the runner' }
           & $compiler "/DAppVersion=$version" 'windows\installer.iss'
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Verify installed bundle
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem 'build\installer\*.exe' | Select-Object -First 1
+          if (-not $installer) { throw 'Installer was not created' }
+          $installDir = Join-Path $env:RUNNER_TEMP 'U310-smoke-install'
+          $setup = Start-Process $installer.FullName -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=`"$installDir`"") -Wait -PassThru
+          if ($setup.ExitCode -ne 0) { throw "Installer failed with exit code $($setup.ExitCode)" }
+
+          foreach ($file in @(
+            'u310_app.exe', 'flutter_windows.dll', 'printing_plugin.dll', 'pdfium.dll',
+            'msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll',
+            'data\app.so', 'data\icudtl.dat', 'data\flutter_assets\AssetManifest.bin'
+          )) {
+            $path = Join-Path $installDir $file
+            if (-not (Test-Path $path -PathType Leaf)) { throw "Installed bundle is missing: $file" }
+          }
 
       - name: Upload installer
         uses: actions/upload-artifact@v4

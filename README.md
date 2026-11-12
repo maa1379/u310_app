@@ -30,6 +30,11 @@ Every push also builds a Windows installer in GitHub Actions. Open the latest
 **Build Windows installer** run and download the `U310-Windows-Installer`
 artifact. Its ZIP contains `U310-Setup-<version>-x64.exe`, which installs the
 complete app for the current Windows user.
+The build bundles the Visual C++ runtime DLLs required by Flutter and checks
+that the installer extracts the app, plugin DLLs, and Flutter data files.
+Install the newest artifact if an older installer opens no window on a PC
+without the required Visual C++ runtime. Installing Microsoft's x64 Visual C++
+Redistributable is a workaround for an already installed older build.
 
 ## Verify
 
