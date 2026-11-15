@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'body_type_trend.dart';
 import 'report_data.dart';
 
 const _navy = Color(0xff1c4785);
@@ -217,8 +218,11 @@ class ReportSheet extends StatelessWidget {
           height: 280,
           child: CustomPaint(
             painter: _TrendPainter(
-              (p['bmi'] as num).toDouble(),
-              (p['fat'] as num).toDouble(),
+              BodyTypeTrend.fromMeasurement(
+                weightKg: (p['w'] as num).toDouble(),
+                skeletalMuscleKg: (p['smm'] as num).toDouble(),
+                bodyFatPercent: (p['fat'] as num).toDouble(),
+              ),
             ),
           ),
         ),
@@ -1047,25 +1051,43 @@ class _BodyPainter extends CustomPainter {
 }
 
 class _TrendPainter extends CustomPainter {
-  _TrendPainter(this.bmi, this.fat);
-  final double bmi;
-  final double fat;
+  _TrendPainter(this.trend);
+  final BodyTypeTrend trend;
+
+  static const _labels = [
+    [
+      'High Muscle\nLow Fat',
+      'High Muscle\nModerate Fat',
+      'High Muscle\nHigh Fat',
+    ],
+    [
+      'Moderate Muscle\nLow Fat',
+      'Moderate Muscle\nModerate Fat',
+      'Moderate Muscle\nHigh Fat',
+    ],
+    ['Low Muscle\nLow Fat', 'Low Muscle\nModerate Fat', 'Low Muscle\nHigh Fat'],
+  ];
+
+  static const _colors = [
+    [Color(0xff278579), Color(0xff488874), Color(0xffaf704b)],
+    [Color(0xff3b8499), Color(0xff668f81), Color(0xffbd794c)],
+    [Color(0xff557a96), Color(0xff888987), Color(0xffad6254)],
+  ];
 
   @override
   void paint(Canvas canvas, Size size) {
     const x = 25.0, y = 17.0, side = 225.0;
-    final rect = Rect.fromLTWH(x, y, side, side);
-    canvas.drawRect(
-      rect,
-      Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.bottomLeft,
-          end: Alignment.topRight,
-          colors: [_navy, Color(0xff2b7591), _teal],
-        ).createShader(rect),
-    );
+    const cellSide = side / 3;
+    for (var r = 0; r < 3; r++) {
+      for (var c = 0; c < 3; c++) {
+        canvas.drawRect(
+          Rect.fromLTWH(x + c * cellSide, y + r * cellSide, cellSide, cellSide),
+          Paint()..color = _colors[r][c],
+        );
+      }
+    }
     final line = Paint()
-      ..color = const Color(0xffd6efe9)
+      ..color = Colors.white.withValues(alpha: 0.65)
       ..strokeWidth = 1.2;
     for (var i = 1; i < 3; i++) {
       canvas.drawLine(
@@ -1079,39 +1101,46 @@ class _TrendPainter extends CustomPainter {
         line,
       );
     }
-    const cells = [
-      ['Athletic', 'Over Weight\nMuscular', 'Obese'],
-      ['Low Fat\nMuscular', 'Standard', 'Over Fat'],
-      ['Low Fat\nLow Weight', 'Low Weight', 'Skinny Fat'],
-    ];
+    canvas.drawRect(
+      Rect.fromLTWH(
+        x + trend.column * cellSide,
+        y + trend.row * cellSide,
+        cellSide,
+        cellSide,
+      ).deflate(2),
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
     for (var r = 0; r < 3; r++) {
       for (var c = 0; c < 3; c++) {
         final tp = TextPainter(
           text: TextSpan(
-            text: cells[r][c],
+            text: _labels[r][c],
             style: const TextStyle(
               fontFamily: 'Arial',
-              fontSize: 7.3,
+              fontSize: 7.1,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
           ),
           textAlign: TextAlign.center,
           textDirection: TextDirection.ltr,
-        )..layout(maxWidth: 74);
+        )..layout(maxWidth: cellSide - 4);
         tp.paint(
           canvas,
           Offset(
-            x + c * 75 + (75 - tp.width) / 2,
-            y + r * 75 + (75 - tp.height) / 2,
+            x + c * cellSide + (cellSide - tp.width) / 2,
+            y + r * cellSide + (cellSide - tp.height) / 2,
           ),
         );
       }
     }
-    final px = x + ((fat / 40).clamp(.07, .95)) * side;
-    final py = y + (1 - ((bmi - 12) / 23).clamp(.07, .95)) * side;
-    canvas.drawCircle(Offset(px, py), 5, Paint()..color = Colors.white);
-    canvas.drawCircle(Offset(px, py), 2, Paint()..color = _navy);
+    final px = x + trend.plotX * side;
+    final py = y + trend.plotY * side;
+    canvas.drawCircle(Offset(px, py), 6, Paint()..color = Colors.white);
+    canvas.drawCircle(Offset(px, py), 3, Paint()..color = _navy);
     final axis = Paint()
       ..color = _ink
       ..strokeWidth = 1.2;
@@ -1125,6 +1154,42 @@ class _TrendPainter extends CustomPainter {
       const Offset(x + side + 11, y + side + 5),
       axis,
     );
+    for (final (value, fraction) in [
+      (0, 0.0),
+      (15, 1 / 3),
+      (30, 2 / 3),
+      (45, 1.0),
+    ]) {
+      final tick = TextPainter(
+        text: TextSpan(
+          text: '$value',
+          style: const TextStyle(fontFamily: 'Arial', fontSize: 7, color: _ink),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tick.paint(
+        canvas,
+        Offset(x + side * fraction - tick.width / 2, y + side + 7),
+      );
+    }
+    for (final (value, fraction) in [
+      (60, 0.0),
+      (45, 1 / 3),
+      (30, 2 / 3),
+      (15, 1.0),
+    ]) {
+      final tick = TextPainter(
+        text: TextSpan(
+          text: '$value',
+          style: const TextStyle(fontFamily: 'Arial', fontSize: 7, color: _ink),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tick.paint(
+        canvas,
+        Offset(x - tick.width - 7, y + side * fraction - tick.height / 2),
+      );
+    }
     final tp = TextPainter(
       text: const TextSpan(
         text: 'Body Fat (%)',
@@ -1133,9 +1198,22 @@ class _TrendPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     )..layout();
     tp.paint(canvas, Offset(x + (side - tp.width) / 2, y + side + 16));
+    final muscleAxis = TextPainter(
+      text: const TextSpan(
+        text: 'SMM / Weight (%)',
+        style: TextStyle(fontFamily: 'Arial', fontSize: 10, color: _ink),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    canvas.save();
+    canvas.translate(1, y + (side + muscleAxis.width) / 2);
+    canvas.rotate(-math.pi / 2);
+    muscleAxis.paint(canvas, Offset.zero);
+    canvas.restore();
   }
 
   @override
   bool shouldRepaint(covariant _TrendPainter old) =>
-      old.bmi != bmi || old.fat != fat;
+      old.trend.bodyFatPercent != trend.bodyFatPercent ||
+      old.trend.skeletalMusclePercent != trend.skeletalMusclePercent;
 }
